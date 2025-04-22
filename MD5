@@ -1,0 +1,14 @@
+926f60e31afacfc1b7ccd0022bcb25ae *DESCRIPTION
+573476b71c33b85c3ff2faf1052f7a37 *NAMESPACE
+134772bbeb194e6648c75af7c136ca82 *R/runGWmodelVis.R
+e99bf12d044d4ff347a862f351eb2138 *inst/GWmodelVisApp/server.R
+846b7d96e3fa98c8f65135f7a5c06694 *inst/GWmodelVisApp/ui.R
+7a8a1d7908182870f7e69dd2108fd901 *inst/GWmodelVisApp/www/gwbp.png
+27df91979d847c7f20adb3bbf327c169 *inst/GWmodelVisApp/www/gwmodel.png
+2a49d4503e9609207885cc92f037f47d *inst/GWmodelVisApp/www/gwpca.jpg
+2000c5e63669b015f56697715808e86b *inst/GWmodelVisApp/www/gwr.jpg
+ba3b99c70544371ac8ad9492de7bdebb *inst/GWmodelVisApp/www/gwss.jpg
+35a7c9bd55337ec3f30501f0e9b981ac *inst/GWmodelVisApp/www/mgwr.jpg
+dc338ef7d766ee7ddbe1d38604afbc25 *inst/GWmodelVisApp/www/music_note.png
+9c012be882d27762d3988ef9bef2d338 *man/GWmodelVis-package.Rd
+7be356c976f0e3d17f89690fc5e48c0d *man/runGWmodelVis.Rd
