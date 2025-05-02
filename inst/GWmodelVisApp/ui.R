@@ -951,6 +951,10 @@ ui <- shinydashboard::dashboardPage(
                                     ),
                                   ),
                             ),
+                            fluidRow(
+                              column(6,checkboxInput("gwpca_glyph_add", "Add all components", FALSE),),
+                              column(6,checkboxInput("gwpca_glyph_sep", "Separation contrast", FALSE),),
+                            ),
                             div(id = "gwpca_bandwidth_div", sliderInput("gwpca_bandwidth", "Bandwidth(Number of points)", min = 1, max = 100, value = 20)),  # 将滑块放在div中 # 初始最大值设为100，稍后在server中更新
                             # 按钮，点击时调用函数
                             actionButton("gwpca_execute", "Execute",width = "100%", class = "btn btn-primary" ,style = "color: white;  margin-bottom: 10px;"), 
@@ -1067,6 +1071,12 @@ ui <- shinydashboard::dashboardPage(
                                                       ),
                                                     ),
                                           ),
+                                tabPanel("Glygh Plot",
+                                          plotOutput(
+                                          outputId = "gwpca_glyph_plot",
+                                          height   = "700px"    # 建议使用具体像素，以避免百分比在 HTML/CSS 中表现不一
+                                          ),
+                                        ),     
                                 tabPanel("Table View",br(),DT::dataTableOutput("gwpca_summaryTable")),
                     ),
                     width = 8,

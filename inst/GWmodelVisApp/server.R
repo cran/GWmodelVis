@@ -142,8 +142,8 @@ gw_boxplot <- function(bw, X, kernel, adaptive, dp.locat, p, theta, longlat, cal
    # 计算 Boxplot 数据
   calculate_boxplot <- function(i) {
     # 计算距离和权重
-    dist.vi <- gw.dist(dp.locat = dp.locat, rp.locat = loop_points, focus = i, p = p, theta = theta, longlat = longlat)
-    W.i <- matrix(gw.weight(dist.vi, bw, kernel, adaptive), nrow = 1)
+    dist.vi <- GWmodel::gw.dist(dp.locat = dp.locat, rp.locat = loop_points, focus = i, p = p, theta = theta, longlat = longlat)
+    W.i <- matrix(GWmodel::gw.weight(dist.vi, bw, kernel, adaptive), nrow = 1)
     Wi <- W.i / sum(W.i)  # 归一化权重
 
     # 计算统计值
@@ -214,14 +214,14 @@ gw_boxplot <- function(bw, X, kernel, adaptive, dp.locat, p, theta, longlat, cal
     # 绘制 Boxplot
     p <- ggplot2::ggplot() +
       # 固定x轴显示范围确保宽度一致
-      xlim(x_range[1], x_range[2]) +
-      geom_shape(data = box, ggplot2::aes(x, y, group = label), alpha = 0.7, linewidth = 0.5, fill = gwbp_bpcolor, colour = "black") +
+      ggplot2::xlim(x_range[1], x_range[2]) +
+      ggforce::geom_shape(data = box, ggplot2::aes(x, y, group = label), alpha = 0.7, linewidth = 0.5, fill = gwbp_bpcolor, colour = "black") +
       # geom_rect(data = box, ggplot2::aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = gwbp_bpcolor), color = "black", alpha = 0.7) + 
-      geom_line(data = lines$line_min, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
-      geom_line(data = lines$line_minl, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
-      geom_line(data = lines$line_maxl, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
-      geom_line(data = lines$line_max, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
-      geom_line(data = lines$line_median, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 1) +
+      ggplot2::geom_line(data = lines$line_min, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
+      ggplot2::geom_line(data = lines$line_minl, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
+      ggplot2::geom_line(data = lines$line_maxl, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
+      ggplot2::geom_line(data = lines$line_max, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 0.5) +
+      ggplot2::geom_line(data = lines$line_median, ggplot2::aes(x, y, group = label), linetype = 1, linewidth = 1) +
       # geom_glowline(data = lines$line_median, ggplot2::aes(x, y, group = label),color = "cyan", size = 0.5, alpha = 0.8, shadowcolor = "cyan", shadowalpha = 0.3, shadowwidth = 0.5) +
       ggplot2::theme_void() +
       ggplot2::theme(legend.position = "none")  # 移除图例
@@ -265,9 +265,9 @@ gw_boxplot_outliers <- function(bw, X, kernel, adaptive, dp.locat, p = 2, theta 
   # 核心函数：计算距离、权重和统计值
   calculate_outlier <- function(i) {
     # 计算距离
-    dist.vi <- gw.dist(dp.locat = dp.locat, focus = i, p = p, theta = theta, longlat = longlat)
+    dist.vi <- GWmodel::gw.dist(dp.locat = dp.locat, focus = i, p = p, theta = theta, longlat = longlat)
     # 计算权重
-    W.i <- gw.weight(dist.vi, bw, kernel, adaptive)
+    W.i <- GWmodel::gw.weight(dist.vi, bw, kernel, adaptive)
     if (any(is.nan(W.i))) stop("The weight vector contains NaN values.")
     Wi <- W.i / sum(W.i)  # 归一化权重
 
@@ -576,7 +576,7 @@ generate_audio <- function(value, filename,x_min = NULL, x_max = NULL) {
     normalized_wave <- pmin(pmax(normalized_wave, -0.5), 0.5)  # **进一步限制振幅**
 
     # --- 生成Wave对象 ---
-    audio_wave <- Wave(
+    audio_wave <- tuneR::Wave(
       left = as.integer(normalized_wave * 32767),
       right = as.integer(normalized_wave * 32767),
       samp.rate = sampling_rate,
@@ -584,7 +584,7 @@ generate_audio <- function(value, filename,x_min = NULL, x_max = NULL) {
     )
 
     # 保存文件
-    writeWave(audio_wave, filename)
+    tuneR::writeWave(audio_wave, filename)
     return(filename)
 
   }, error = function(e) {
@@ -833,7 +833,7 @@ server <- function(input, output,session) {
       }
     }, error = function(e) {
       shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
     # 检查 dp.locat 是否为空
@@ -861,7 +861,7 @@ server <- function(input, output,session) {
       )
     }, error = function(e) {
       shiny::showNotification(paste("Error creating SpatialPointsDataFrame:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
 
@@ -882,7 +882,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     }
     # 获取选项
@@ -900,7 +900,7 @@ server <- function(input, output,session) {
       GWmodel::gwss(data = spdf, vars = gwss_vars, bw = gwss_bw_data$bw, kernel = gwss_kernel, adaptive = gwss_adaptive)
     }, error = function(e) {
       shiny::showNotification(paste("Error running GWSS:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
 
@@ -923,7 +923,7 @@ server <- function(input, output,session) {
     # 更新进度条到 100%
     shinyWidgets::updateProgressBar(session = session, id = "gwss_progress", value = 100)
     Sys.sleep(1)  # 等待一秒，确保用户看到完成的进度条
-    removeModal()
+    shiny::removeModal()
 
     return(model)
   })
@@ -1321,7 +1321,7 @@ server <- function(input, output,session) {
         sf::st_sf()
     } else {
       shiny::showNotification("The number of data rows is inconsistent", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -1336,7 +1336,7 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_gwss, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       
@@ -1366,14 +1366,14 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_gwss, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       intersect_features <- intersects
 
       if(nrow(intersect_features) == 0) {
         shiny::showNotification("The line does not pass through any features", type = "warning")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       # **绘制调试图，检查是否有交集**
@@ -1393,7 +1393,7 @@ server <- function(input, output,session) {
 
     } else {
       shiny::showNotification("The current geometry type is not supported", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     
@@ -1512,7 +1512,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result) && ffmpeg_result != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " 合成波形图和音频完成，文件保存为: ", sound_video, "\n")
@@ -1561,7 +1561,7 @@ server <- function(input, output,session) {
 
     shinyWidgets::updateProgressBar(session = session, id = "gwss_audio_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
   })
   # 处理连线的图标
   observeEvent(input$gwss_confirm_audio_clear, {
@@ -1743,7 +1743,7 @@ server <- function(input, output,session) {
           } else {
             # 如果既不是点也不是面，抛出警告
             shiny::showNotification("Unsupported geometry type for plotting.", type = "error")
-            removeModal()
+            shiny::removeModal()
             return()
           }        
         })
@@ -1751,7 +1751,7 @@ server <- function(input, output,session) {
     }
 
     # # 动态图片生成完成后关闭等待窗口
-    removeModal()
+    shiny::removeModal()
   })
   # 动态显示图片
   output$gwss_Plot <- renderUI({
@@ -1885,7 +1885,7 @@ server <- function(input, output,session) {
     # 确保数据中有有效的几何列
     if (is.null(sf::st_geometry(shp_data))){ 
       shiny::showNotification("shp_data does not contain geometry.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
      # 计算模型结果
@@ -1934,7 +1934,7 @@ server <- function(input, output,session) {
     # 确保全局范围有效
     if (global_min == Inf || global_max == -Inf) {
       shiny::showNotification("No valid range values found for plotting.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 扩展比例
@@ -2048,7 +2048,7 @@ server <- function(input, output,session) {
     audio_normalized[audio_normalized < -1] <- -1
 
     # --- 生成Wave对象 ---
-    audio_wave <- Wave(
+    audio_wave <- tuneR::Wave(
       left = as.integer(audio_normalized * 32767),
       right = as.integer(audio_normalized * 32767),
       samp.rate = sampling_rate,
@@ -2057,7 +2057,7 @@ server <- function(input, output,session) {
 
     # 保存为WAV文件
     sound_road <- file.path(temp_dir,paste0("gwss_sound_audio_", range_min, "_", range_max, ".wav"))
-    writeWave(audio_wave, sound_road)
+    tuneR::writeWave(audio_wave, sound_road)
     cat(format(Sys.time(),"%Y-%m-%d %H:%M:%S")," 音频文件已保存为",sound_road,"\n")
 
     # 音频波形图
@@ -2163,7 +2163,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result) && ffmpeg_result != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 打印合成结果
@@ -2197,13 +2197,13 @@ server <- function(input, output,session) {
       # 防御性处理：确保 exit_code 是数值类型
       if (is.null(exit_code) || is.na(exit_code)) {
         shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       
       if (exit_code != 0) {
         shiny::showNotification(paste0("FFmpeg exited with code ", exit_code))
-        removeModal()
+        shiny::removeModal()
         return()
       }
       
@@ -2217,7 +2217,7 @@ server <- function(input, output,session) {
     }, error = function(e) {
       cat("!!! 最终视频合成失败:", e$message, "\n")
       shinyalert::shinyalert("致命错误", paste("视频合成失败:", e$message), type = "error")
-      removeModal()  # 强制关闭进度窗口
+      shiny::removeModal()  # 强制关闭进度窗口
       return()
     })
 
@@ -2229,7 +2229,7 @@ server <- function(input, output,session) {
     # 函数执行完成后，关闭等待窗口
     shinyWidgets::updateProgressBar(session = session, id = "gwss_video_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
 
     cat("检查最终视频文件是否存在:", final_video, "\n")
     cat("文件是否存在:", file.exists(final_video), "\n")
@@ -2494,7 +2494,7 @@ server <- function(input, output,session) {
     # 检查数据是否为 sf 对象
     if (!inherits(gwbp_shp_data, "sf")) {
       shiny::showNotification("Unsupported data types. Input is not an sf object.", type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 修复可能的无效几何数据
@@ -2522,12 +2522,12 @@ server <- function(input, output,session) {
         dp.locat <- data.frame(longitude = coords[, 1], latitude = coords[, 2])
       } else {
         shiny::showNotification(paste("Unsupported geometry type(s):", paste(geometry_type, collapse = ", ")), type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
     }, error = function(e) {
       shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
     # 检查 dp.locat 是否为空
@@ -2564,12 +2564,12 @@ server <- function(input, output,session) {
           calibrationPoint <- data.frame(longitude = coords[, 1], latitude = coords[, 2])
         } else {
           shiny::showNotification(paste("Unsupported geometry type(s):", paste(geometry_type, collapse = ", ")), type = "error")
-          removeModal()
+          shiny::removeModal()
           return()
         }
       }, error = function(e) {
         shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
     }
@@ -2604,7 +2604,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 数值转换与缺失值处理
@@ -2674,7 +2674,7 @@ server <- function(input, output,session) {
         )
       } else {
         shiny::showNotification("Data miss longitude and latitude columns", type = "error", duration = NULL)
-        removeModal()
+        shiny::removeModal()
       }
     }
 
@@ -2686,7 +2686,7 @@ server <- function(input, output,session) {
     # 更新进度条到 100%
     shinyWidgets::updateProgressBar(session = session, id = "gwbp_progress", value = 100)
     Sys.sleep(1)  # 等待一秒，确保用户看到完成的进度条
-    removeModal()
+    shiny::removeModal()
 
     running(FALSE)
   })
@@ -2783,7 +2783,7 @@ server <- function(input, output,session) {
         leaflet::clearGroup("point_cards_markers") %>%
         leaflet::clearGroup("Outliers") %>%
         leaflet::clearGroup("Non-outliers") %>%
-        clearControls() %>%
+        leaflet::clearControls() %>%
         leaflet::addMarkers(
           data = results,
           lng = results$longitude,
@@ -3246,7 +3246,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 2. 检查数值类型
@@ -3265,7 +3265,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -3288,12 +3288,12 @@ server <- function(input, output,session) {
         dp.locat <- data.frame(longitude = coords[, 1], latitude = coords[, 2])
       } else {
         shiny::showNotification(paste("Unsupported geometry type(s):", paste(geometry_type, collapse = ", ")), type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
     }, error = function(e) {
       shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
     # 检查 dp.locat 是否为空
@@ -3360,7 +3360,7 @@ server <- function(input, output,session) {
     # 更新进度条100%
     shinyWidgets::updateProgressBar(session = session, id = "gwr_progress", value = 100)
     Sys.sleep(1)  # 等待一秒，确保用户看到完成的进度条
-    removeModal()
+    shiny::removeModal()
 
     return(model)  # 返回
   })
@@ -4121,7 +4121,7 @@ server <- function(input, output,session) {
         sf::st_sf()
     } else {
       shiny::showNotification("The number of data rows is inconsistent", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -4138,7 +4138,7 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_gwr, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       
@@ -4165,14 +4165,14 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_gwr, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       intersect_features <- intersects
 
       if(length(intersect_features) == 0) {
         shiny::showNotification("The line does not pass through any features", type = "warning")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       # **绘制调试图，检查是否有交集**
@@ -4191,7 +4191,7 @@ server <- function(input, output,session) {
         )
     } else {
       shiny::showNotification("The current geometry type is not supported", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     
@@ -4310,7 +4310,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result) && ffmpeg_result != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " 合成波形图和音频完成，文件保存为: ", sound_video, "\n")
@@ -4360,7 +4360,7 @@ server <- function(input, output,session) {
 
     shinyWidgets::updateProgressBar(session = session, id = "gwr_audio_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
   })
   # 处理连线的图标
   observeEvent(input$gwr_confirm_audio_clear, {
@@ -4483,7 +4483,7 @@ server <- function(input, output,session) {
     if (is.null(sf::st_geometry(shp_data))) 
     {
       shiny::showNotification("shp_data does not contain geometry.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -4508,7 +4508,7 @@ server <- function(input, output,session) {
       if (is.null(sf::st_geometry(cp_shp_data))) 
       {
         shiny::showNotification("cp_shp_data does not contain geometry.", type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       target_shp_data <- cp_shp_data
@@ -4547,7 +4547,7 @@ server <- function(input, output,session) {
     # 确保全局范围有效
     if (global_min == Inf || global_max == -Inf) {
       shiny::showNotification("No valid range values found for plotting.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 扩展比例
@@ -4662,7 +4662,7 @@ server <- function(input, output,session) {
     audio_normalized[audio_normalized < -1] <- -1
 
     # --- 生成Wave对象 ---
-    audio_wave <- Wave(
+    audio_wave <- tuneR::Wave(
       left = as.integer(audio_normalized * 32767),
       right = as.integer(audio_normalized * 32767),
       samp.rate = sampling_rate,
@@ -4670,7 +4670,7 @@ server <- function(input, output,session) {
     )
     # 保存为WAV文件
     sound_road <- file.path(temp_dir,paste0("gwr_sound_audio_", range_min, "_", range_max, ".wav"))
-    writeWave(audio_wave, sound_road)
+    tuneR::writeWave(audio_wave, sound_road)
     cat(format(Sys.time(),"%Y-%m-%d %H:%M:%S")," 音频文件已保存为",sound_road,"\n")
 
 
@@ -4757,7 +4757,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result) && ffmpeg_result != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 打印合成结果
@@ -4794,7 +4794,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result_conbine) && ffmpeg_result_conbine != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -4806,7 +4806,7 @@ server <- function(input, output,session) {
     # 函数执行完成后，关闭等待窗口
     shinyWidgets::updateProgressBar(session = session, id = "gwr_video_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
 
      # 输出视频控件
     output$gwr_image_video <- renderUI({
@@ -4857,7 +4857,7 @@ server <- function(input, output,session) {
       if (is.null(sf::st_geometry(cp_shp_data))) 
       {
         shiny::showNotification("cp_shp_data does not contain geometry.", type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       target_shp_data <- cp_shp_data
@@ -4982,7 +4982,7 @@ server <- function(input, output,session) {
             }
           } else {
             shiny::showNotification("Unsupported geometry type for plotting.", type = "error")
-            removeModal()
+            shiny::removeModal()
             return()
           }        
         })
@@ -4990,7 +4990,7 @@ server <- function(input, output,session) {
     }
 
     # # 动态图片生成完成后关闭等待窗口
-    removeModal()
+    shiny::removeModal()
   })
   # 动态显示图片
   output$gwr_Plot <- renderUI({
@@ -5047,7 +5047,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 转换为 sf 对象
@@ -5075,7 +5075,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 2. 检查数值类型
@@ -5094,7 +5094,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 获取用户选定的变量
@@ -5141,7 +5141,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     })
     # 更新进度条
@@ -5253,7 +5253,7 @@ server <- function(input, output,session) {
     # 更新进度条
     shinyWidgets::updateProgressBar(session = session, id = "gwr_predict_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
   })
 
   #--------------------------# MGWR #--------------------------#
@@ -5485,7 +5485,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
     # 2. 检查数值类型
@@ -5504,7 +5504,7 @@ server <- function(input, output,session) {
         type = "error",
         duration = NULL
       )
-      removeModal()
+      shiny::removeModal()
       return()
     }
         # 初始化 dp.locat
@@ -5526,12 +5526,12 @@ server <- function(input, output,session) {
         dp.locat <- data.frame(longitude = coords[, 1], latitude = coords[, 2])
       } else {
         shiny::showNotification(paste("Unsupported geometry type(s):", paste(geometry_type, collapse = ", ")), type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
     }, error = function(e) {
       shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
     # 检查 dp.locat 是否为空
@@ -5587,7 +5587,7 @@ server <- function(input, output,session) {
     # 更新进度条100%
     shinyWidgets::updateProgressBar(session = session, id = "mgwr_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
 
     return(model)  # 返回
   })
@@ -5676,7 +5676,7 @@ server <- function(input, output,session) {
   #--------------------------# Web Map #-------------------------#
   # 地图可视化
   output$mgwr_mapPlot <- leaflet::renderLeaflet({
-    map <- leaflet::leaflet %>%
+    map <- leaflet::leaflet() %>%
           leaflet::clearMarkers() %>%
           leaflet::addProviderTiles("CartoDB.Positron")
 
@@ -6223,7 +6223,7 @@ server <- function(input, output,session) {
         sf::st_sf()
     } else {
       shiny::showNotification("The number of data rows is inconsistent", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -6240,7 +6240,7 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_mgwr, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       
@@ -6270,14 +6270,14 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_mgwr, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       intersect_features <- intersects
 
       if(nrow(intersect_features) == 0) {
         shiny::showNotification("The line does not pass through any features", type = "warning")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       # **绘制调试图，检查是否有交集**
@@ -6297,7 +6297,7 @@ server <- function(input, output,session) {
 
     } else {
       shiny::showNotification("The current geometry type is not supported", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     
@@ -6416,7 +6416,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result) && ffmpeg_result != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " 合成波形图和音频完成，文件保存为: ", sound_video, "\n")
@@ -6465,7 +6465,7 @@ server <- function(input, output,session) {
 
     shinyWidgets::updateProgressBar(session = session, id = "mgwr_audio_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
   })
   # 处理连线的图标
   observeEvent(input$mgwr_confirm_audio_clear, {
@@ -6810,7 +6810,7 @@ server <- function(input, output,session) {
           } else {
             # 如果既不是点也不是面，抛出警告
             shiny::showNotification("Unsupported geometry type for plotting.", type = "error")
-            removeModal()
+            shiny::removeModal()
             return()
           }        
         })
@@ -7082,12 +7082,12 @@ server <- function(input, output,session) {
         dp.locat <- data.frame(longitude = coords[, 1], latitude = coords[, 2])
       } else {
         shiny::showNotification(paste("Unsupported geometry type(s):", paste(geometry_type, collapse = ", ")), type = "error")
-        removeModal()
+        shiny::removeModal()
         return()
       }
     }, error = function(e) {
       shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
     # 检查 dp.locat 是否为空
@@ -7106,7 +7106,7 @@ server <- function(input, output,session) {
       )
     }, error = function(e) {
       shiny::showNotification(paste("Error creating SpatialPointsDataFrame:", e$message), type = "error", duration = NULL)
-      removeModal()
+      shiny::removeModal()
       return(NULL)
     })
 
@@ -7139,7 +7139,7 @@ server <- function(input, output,session) {
     #     gwpca_cp_shp_data <- sf::st_make_valid(gwpca_cp_shp_data)
     #   } else {
     #     shiny::showNotification("Invalid shapefile data.", type = "error", duration = NULL)
-    #     removeModal()
+    #     shiny::removeModal()
     #     return(NULL)
     #   }
       
@@ -7163,7 +7163,7 @@ server <- function(input, output,session) {
     #     }
     #   }, error = function(e) {
     #     shiny::showNotification(paste("Error extracting coordinates:", e$message), type = "error", duration = NULL)
-    #     removeModal()
+    #     shiny::removeModal()
     #     return(NULL)
     #   })
     # }
@@ -7179,7 +7179,7 @@ server <- function(input, output,session) {
     #   sp_cp_locat <- SpatialPoints(cp_locat, proj4string = CRS("+proj=longlat +datum=WGS84"))
     # } else {
     #   shiny::showNotification("Coordinate extraction failed, cp_locat is NULL or empty.", type = "error", duration = NULL)
-    #   removeModal()
+    #   shiny::removeModal()
     #   return(NULL)
     # }
 
@@ -7190,7 +7190,7 @@ server <- function(input, output,session) {
               GWmodel::gwpca(data = spdf, vars = gwpca_vars, k = gwpca_k, bw = bandwidth, kernel = gwpca_kernel, adaptive = gwpca_adaptive)
             }, error = function(e) {
               shiny::showNotification(paste("Error running GWPCA:", e$message), type = "error", duration = NULL)
-              removeModal()
+              shiny::removeModal()
               return(NULL)
             })
 
@@ -7214,7 +7214,7 @@ server <- function(input, output,session) {
     #             GWmodel::gwpca(data = spdf, vars = gwpca_vars, k = gwpca_k, bw = bandwidth, kernel = gwpca_kernel, adaptive = gwpca_adaptive)
     #           }, error = function(e) {
     #             shiny::showNotification(paste("Error running GWPCA:", e$message), type = "error", duration = NULL)
-    #             removeModal()
+    #             shiny::removeModal()
     #             return(NULL)
     #           })
     # }else{
@@ -7222,7 +7222,7 @@ server <- function(input, output,session) {
     #             GWmodel::gwpca(data = spdf, elocat = sp_cp_locat ,vars = gwpca_vars, k = gwpca_k, bw = bandwidth, kernel = gwpca_kernel, adaptive = gwpca_adaptive)
     #           }, error = function(e) {
     #             shiny::showNotification(paste("Error running GWPCA with elocat:", e$message), type = "error", duration = NULL)
-    #             removeModal()
+    #             shiny::removeModal()
     #             return(NULL)
     #           })
     # }
@@ -7231,7 +7231,7 @@ server <- function(input, output,session) {
     # 更新进度条到 100%
     shinyWidgets::updateProgressBar(session = session, id = "gwpca_progress", value = 100)
     Sys.sleep(1)  # 等待一秒，确保用户看到完成的进度条
-    removeModal()
+    shiny::removeModal()
 
     return(model)
   })
@@ -7776,7 +7776,7 @@ server <- function(input, output,session) {
         sf::st_sf()
     } else {
       shiny::showNotification("The number of data rows is inconsistent", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
 
@@ -7791,7 +7791,7 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_gwpca, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       
@@ -7821,14 +7821,14 @@ server <- function(input, output,session) {
         sf::st_filter(shp_data_with_gwpca, line_buffer)
       }, error = function(e) {
         shiny::showNotification("Fail in intersects", type = "error")
-        removeModal()
+        shiny::removeModal()
         return(NULL)
       })
       intersect_features <- intersects
 
       if(nrow(intersect_features) == 0) {
         shiny::showNotification("The line does not pass through any features", type = "warning")
-        removeModal()
+        shiny::removeModal()
         return()
       }
       # **绘制调试图，检查是否有交集**
@@ -7848,7 +7848,7 @@ server <- function(input, output,session) {
 
     } else {
       shiny::showNotification("The current geometry type is not supported", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     
@@ -7967,7 +7967,7 @@ server <- function(input, output,session) {
     })
     if (!is.na(ffmpeg_result) && ffmpeg_result != 0) {
       shiny::showNotification("The command execution of FFmpeg failed.Please check (1) whether ffmpeg is installed (2) whether the system path is configured.", type = "error")
-      removeModal()
+      shiny::removeModal()
       return()
     }
     cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " 合成波形图和音频完成，文件保存为: ", sound_video, "\n")
@@ -8016,7 +8016,7 @@ server <- function(input, output,session) {
 
     shinyWidgets::updateProgressBar(session = session, id = "gwpca_audio_progress", value = 100)
     Sys.sleep(1)
-    removeModal()
+    shiny::removeModal()
   })
   # 处理连线的图标
   observeEvent(input$gwpca_confirm_audio_clear, {
@@ -8169,7 +8169,7 @@ server <- function(input, output,session) {
           } else {
             # 如果既不是点也不是面，抛出警告
             shiny::showNotification("Unsupported geometry type for plotting.", type = "error")
-            removeModal()
+            shiny::removeModal()
             return()
           }        
         })
@@ -8177,7 +8177,7 @@ server <- function(input, output,session) {
     }
 
     # # 动态图片生成完成后关闭等待窗口
-    removeModal()
+    shiny::removeModal()
   })
   # 动态显示图片
   output$gwpca_Plot <- renderUI({
@@ -8198,6 +8198,49 @@ server <- function(input, output,session) {
 
     # 将图片控件布局在 fluidRow 中
     do.call(fluidRow, plot_outputs)
+  })
+  #--------------------------# Glygh Plot #-------------------------#
+  output$gwpca_glyph_plot <- renderPlot({
+    gwpca_result <- gwpca_result()
+    sdf    <- gwpca_result$SDF
+    coords <- sp::coordinates(sdf)
+
+    # 基本校验
+    if (nrow(gwpca_result$loadings) != nrow(coords)) {
+      showNotification("载荷与坐标行数不匹配", type = "error")
+      return()
+    }
+    if (any(apply(gwpca_result$loadings, 1, max) == 0)) {
+      showNotification("存在全零载荷行", type = "error")
+      return()
+    }
+
+    if(isTRUE(input$gwpca_glyph_add)){
+      # 取 k 个主成分
+      k <- dim(gwpca_result$loadings)[3]
+      for (pc in 1:k) {
+        ld_mat <- gwpca_result$loadings[, , pc]
+        GWmodel::gwpca.glyph.plot(
+          ld            = ld_mat,
+          loc           = coords,
+          r1            = 50,
+          add           = (pc != 1),        # 第一张图 recreate，后续叠加
+          alpha         = 1,              # 可调整透明度
+          sep.contrasts = as.logical(input$gwpca_glyph_sep) 
+        )
+      }
+    }else{
+      # 取第1个主成分的局部载荷矩阵（维度：n_locations × n_variables）
+      local_loadings_pc1 <- gwpca_result$loadings[, , 1]
+      GWmodel::gwpca.glyph.plot(
+          ld = local_loadings_pc1,  
+          loc = coords,
+          sep.contrasts =  as.logical(input$gwpca_glyph_sep),
+          r1 = 50,
+          add = FALSE,
+          alpha = 1
+      )
+    }
   })
 
 
